@@ -1,11 +1,11 @@
 {
-  "name": "@alejandrocortell/react-native-multiswitch",
-  "version": "0.9.11",
+  "name": "react-native-multiple-switch",
+  "version": "1.0.0",
   "description": "Multiswitch selector for react native",
   "main": "dist/index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/alejandrocortell/react-native-multiswitch.git"
+    "url": "git+https://github.com/alejandrocortell/react-native-multiple-switch.git"
   },
   "keywords": [
     "react-native",
@@ -21,7 +21,7 @@
   "author": "Alejandro Cortell",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/alejandrocortell/react-native-multiswitch/issues"
+    "url": "https://github.com/alejandrocortell/react-native-multiple-switch/issues"
   },
-  "homepage": "https://github.com/alejandrocortell/react-native-multiswitch#readme"
+  "homepage": "https://github.com/alejandrocortell/react-native-multiple-switch#readme"
 }
