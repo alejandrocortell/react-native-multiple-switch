@@ -35,6 +35,9 @@ var MultipleSwitch = function (props) {
   var _a = (0, react_1.useState)([]),
     elements = _a[0],
     setElements = _a[1]
+  var _b = (0, react_1.useState)(props.value),
+    active = _b[0],
+    setActive = _b[1]
   var animatedValue = (0, react_1.useRef)(
     new react_native_1.Animated.Value(0)
   ).current
@@ -47,7 +50,9 @@ var MultipleSwitch = function (props) {
         var position = elements.find(function (el) {
           return el.id === props.value
         })
-        if (!position) return
+        if (!position) {
+          return
+        }
         react_native_1.Animated.timing(animatedValue, {
           toValue: position.value,
           duration: 0,
@@ -84,12 +89,6 @@ var MultipleSwitch = function (props) {
       props.disabled ? style_1['default'].sliderDisabled : {},
     ]
   }
-  var getItemStyle = function () {
-    return [style_1['default'].item, { width: 100 / props.items.length + '%' }]
-  }
-  var getItemTextStyle = function () {
-    return [style_1['default'].itemText, props.textStyle ? props.textStyle : {}]
-  }
   var getSliderWidth = function () {
     return 100 / props.items.length + '%'
   }
@@ -97,13 +96,16 @@ var MultipleSwitch = function (props) {
     var position = elements.find(function (el) {
       return el.id === newVal
     })
-    if (!position) return
+    if (!position) {
+      return
+    }
     react_native_1.Animated.timing(animatedValue, {
       toValue: position.value,
       duration: 200,
       easing: react_native_1.Easing.ease,
       useNativeDriver: true,
     }).start()
+    setActive(newVal)
     props.onChange(newVal)
   }
   return (0, jsx_runtime_1.jsxs)(
@@ -121,7 +123,10 @@ var MultipleSwitch = function (props) {
               __assign(
                 {
                   activeOpacity: 0.7,
-                  style: getItemStyle(),
+                  style: [
+                    style_1['default'].item,
+                    { width: 100 / props.items.length + '%' },
+                  ],
                   onPress: function () {
                     return startAnimation(item)
                   },
@@ -140,7 +145,14 @@ var MultipleSwitch = function (props) {
                   children: (0, jsx_runtime_1.jsx)(
                     react_native_1.Text,
                     __assign(
-                      { style: getItemTextStyle(), numberOfLines: 1 },
+                      {
+                        style: [
+                          style_1['default'].itemText,
+                          props.textStyle,
+                          active === item && props.activeTextStyle,
+                        ],
+                        numberOfLines: 1,
+                      },
                       { children: item }
                     )
                   ),

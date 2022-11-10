@@ -42,17 +42,18 @@ export const App = () => {
 
 ## Props
 
-| Prop           | Type                    | Default | Required |
-| -------------- | ----------------------- | ------- | -------- |
-| items          | string[]                |         | true     |
-| value          | string                  |         | true     |
-| onChange       | (value: string) => void |         | true     |
-| disabled       | boolean                 | false   | false    |
-| mediumHeight   | boolean                 | false   | false    |
-| bigHeight      | boolean                 | false   | false    |
-| containerStyle | ViewStyle               | {}      | false    |
-| sliderStyle    | ViewStyle               | {}      | false    |
-| textStyle      | TextStyle               | {}      | false    |
+| Prop            | Type                    | Default | Required |
+| --------------- | ----------------------- | ------- | -------- |
+| items           | string[]                |         | true     |
+| value           | string                  |         | true     |
+| onChange        | (value: string) => void |         | true     |
+| disabled        | boolean                 | false   | false    |
+| mediumHeight    | boolean                 | false   | false    |
+| bigHeight       | boolean                 | false   | false    |
+| containerStyle  | ViewStyle               | {}      | false    |
+| sliderStyle     | ViewStyle               | {}      | false    |
+| textStyle       | TextStyle               | {}      | false    |
+| activeTextStyle | TextStyle               | {}      | false    |
 
 ## Examples
 
