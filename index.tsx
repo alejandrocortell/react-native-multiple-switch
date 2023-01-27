@@ -6,10 +6,11 @@ import {
   Text,
   TextStyle,
   TouchableOpacity,
+  useWindowDimensions,
   View,
   ViewStyle,
 } from 'react-native'
-
+// import useStyle from './style'
 import styles from './style'
 
 interface Props {
@@ -30,10 +31,18 @@ interface Props {
 }
 
 const MultipleSwitch: FC<Props> = (props) => {
+  // const { styles } = useStyle()
+  const { width } = useWindowDimensions()
+  const [items, setItems] = useState(props.items)
   const [elements, setElements] = useState<{ id: string; value: number }[]>([])
   const [active, setActive] = useState(props.value)
   const animatedValue = useRef(new Animated.Value(0)).current
   const opacityValue = useRef(new Animated.Value(0)).current
+
+  useEffect(() => {
+    setItems(props.items)
+    setElements([])
+  }, [width])
 
   useEffect(() => {
     if (elements.length === props.items.length) {
@@ -100,12 +109,14 @@ const MultipleSwitch: FC<Props> = (props) => {
   return (
     <View style={getContainerStyle()}>
       <Animated.View style={[getSliderStyle()]} />
-      {props.items.map((item: string) => {
+      {items.map((item: string) => {
         return (
           <TouchableOpacity
             activeOpacity={0.7}
             style={[styles.item, { width: 100 / props.items.length + '%' }]}
-            onPress={() => startAnimation(item)}
+            onPress={() => {
+              startAnimation(item)
+            }}
             key={item}
             onLayout={(e) =>
               setElements([
