@@ -16,6 +16,7 @@ export default StyleSheet.create({
     alignItems: 'center',
     height: 30,
     backgroundColor: backgroundColor,
+    overflow: 'hidden'
   },
   slider: {
     position: 'absolute',

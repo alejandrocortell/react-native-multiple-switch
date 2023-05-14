@@ -40,15 +40,16 @@ var MultipleSwitch = function (props) {
     (0, react_1.useEffect)(function () {
         if (elements.length === props.items.length) {
             var position = elements.find(function (el) { return el.id === props.value; });
-            if (!position) {
-                return;
-            }
+
             react_native_1.Animated.timing(animatedValue, {
-                toValue: position.value,
+                toValue: position ? position.value : -width, // set position out of bounds if !position
                 duration: 0,
                 easing: react_native_1.Easing.linear,
                 useNativeDriver: true
             }).start(function () {
+                // keep transparent if out of bounds
+                if(!position) return
+                
                 react_native_1.Animated.timing(opacityValue, {
                     toValue: 1,
                     duration: 100,
@@ -90,8 +91,23 @@ var MultipleSwitch = function (props) {
             duration: 200,
             easing: react_native_1.Easing.ease,
             useNativeDriver: true
-        }).start();
-        setActive(newVal);
+        }).start(function () {
+            setActive(newVal)
+
+            const oldPosition = elements.find(function (el) { return el.id === props.value; })
+
+            // only run below code if slider previously out of bounds
+            // we've executed setActive() before this to prevent butchering the animation
+            if(oldPosition) return
+            
+            react_native_1.Animated.timing(opacityValue, {
+                toValue: 1,
+                duration: 100,
+                easing: react_native_1.Easing.linear,
+                useNativeDriver: true
+            }).start();
+            
+        });
         props.onChange(newVal);
     };
     return ((0, jsx_runtime_1.jsxs)(react_native_1.View, __assign({ style: getContainerStyle() }, { children: [(0, jsx_runtime_1.jsx)(react_native_1.Animated.View, { style: [getSliderStyle()] }), items.map(function (item) {
