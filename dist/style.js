@@ -15,7 +15,8 @@ exports["default"] = react_native_1.StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         height: 30,
-        backgroundColor: backgroundColor
+        backgroundColor: backgroundColor,
+        overflow: 'hidden'
     },
     slider: {
         position: 'absolute',

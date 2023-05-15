@@ -47,15 +47,15 @@ const MultipleSwitch: FC<Props> = (props) => {
   useEffect(() => {
     if (elements.length === props.items.length) {
       const position = elements.find((el) => el.id === props.value)
-      if (!position) {
-        return
-      }
       Animated.timing(animatedValue, {
-        toValue: position.value,
+        toValue: position ? position.value : -width, // set position out of bounds if !position
         duration: 0,
         easing: Easing.linear,
         useNativeDriver: true,
       }).start(() => {
+        // keep transparent if out of bounds
+        if(!position) return
+
         Animated.timing(opacityValue, {
           toValue: 1,
           duration: 100,
@@ -101,8 +101,21 @@ const MultipleSwitch: FC<Props> = (props) => {
       duration: 200,
       easing: Easing.ease,
       useNativeDriver: true,
-    }).start()
-    setActive(newVal)
+    }).start(() => {
+      setActive(newVal)
+
+      const oldPosition = elements.find(function (el) { return el.id === props.value; })
+
+      // keep transparent if out of bounds
+      if(oldPosition) return
+
+      Animated.timing(opacityValue, {
+        toValue: 1,
+        duration: 100,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }).start()
+    })
     props.onChange(newVal)
   }
 
