@@ -173,8 +173,6 @@ export const MultipleSwitch = <D extends any> (props: Props<D>) => {
    * This will re-populate the items.
    */
   useEffect(() => {
-    console.log('props.items updated.');
-
     setItems(props.items)
     setElements([])
   }, [width, props.items]);
