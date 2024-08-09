@@ -76,19 +76,15 @@ const MultipleSwitch: FC<Props> = (props) => {
     ]
   }
 
-  const getSliderStyle = () => {
+  const getSliderStyle = (): StyleProp<ViewStyle> => {
     return [
       styles.slider,
-      { width: getSliderWidth() },
+      { width: `${100 / props.items.length}%` },
       { transform: [{ translateX: animatedValue }] },
       { opacity: opacityValue },
       props.sliderStyle ? props.sliderStyle : {},
       props.disabled ? styles.sliderDisabled : {},
     ]
-  }
-
-  const getSliderWidth = () => {
-    return 100 / props.items.length + '%'
   }
 
   const startAnimation = (newVal: string) => {
@@ -126,7 +122,7 @@ const MultipleSwitch: FC<Props> = (props) => {
         return (
           <TouchableOpacity
             activeOpacity={0.7}
-            style={[styles.item, { width: 100 / props.items.length + '%' }]}
+            style={[styles.item, { width: `${100 / props.items.length}%` }]}
             onPress={() => {
               startAnimation(item)
             }}
