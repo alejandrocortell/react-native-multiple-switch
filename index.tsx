@@ -1,5 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+////////////////////////////
+// 3RD PARTY DEPENDENCIES //
+////////////////////////////
 import {
   Animated,
   Easing,
@@ -7,15 +10,20 @@ import {
   Text,
   TextStyle,
   TouchableOpacity,
-  useWindowDimensions,
   View,
   ViewStyle,
 } from 'react-native';
 
 
+///////////////////////////
+// INTERNAL DEPENDENCIES //
+///////////////////////////
 import styles from './style';
 
 
+///////////
+// TYPES //
+///////////
 export type MultipleSwitchItem<D extends any> = {
   /**
    * The text to display in the GUI for this item.
@@ -61,7 +69,42 @@ export type Colors = {
   activeTextColor: string;
 };
 
-interface Props<D extends any> {
+export type SliderAnimationConfig = {
+  /**
+   * The number of milliseconds that it should take for the sliding animation
+   * to complete from one end of the switch to the other.
+   * 
+   * Example:
+   * If this is set to 1000, and there are 5 items in the switch, then the
+   * animation duration to go from the 1st item to the last item would be
+   * 1000 ms.
+   * 
+   * But the animation duration to go from the 1st item to the 3rd item would
+   * be 500 ms since we're only moving the distance of 2 items rather than all
+   * 4.
+   */
+  slidingDurationMs?: number;
+  /**
+   * The number of milliseconds that it should take for the opacity change
+   * animation to complete once the slider completes sliding.
+   */
+  opacityDurationMs?: number;
+  /**
+   * The value that should be used for the opacity of the slider when it's
+   * moving.
+   * 
+   * This value must be between [0, 1].
+   * - "0" would mean that the slider would be fully transparent during the animation.
+   * - "0.5" would mean that the slider would be 50% transparent during the animation.
+   * - "1" would mean that the slider would be fully opaque during the animation.
+   * 
+   * When the animated movement is complete, the opacity of the slider will be 
+   * set back to "1".
+   */
+  opacityStartingValue?: number;
+};
+
+export type MultipleSwitchProps<D extends any> = {
   /**
    * The array of "MultipleSwitchItem" elements.
    */
@@ -82,14 +125,15 @@ interface Props<D extends any> {
    */
   onChange: (value: MultipleSwitchItem<D>) => void;
   /**
-   * The boolean flag to denote if this "MultipleSwitch" is disabled.
+   * The (optional) boolean flag to denote if this "MultipleSwitch" is
+   * disabled.
    */
   disabled?: boolean;
 
   // Sizes
   /**
-   * The boolean flag to denote if this "MultipleSwitch" should be rendered at
-   * "medium" height.
+   * The (optional) boolean flag to denote if this "MultipleSwitch" should be
+   * rendered at "medium" height.
    * 
    * If both "mediumHeight" and "bigHeight" are set, "bigHeight" will take
    * precedence.
@@ -98,8 +142,8 @@ interface Props<D extends any> {
    */
   mediumHeight?: boolean;
   /**
-   * The boolean flag to denote if this "MultipleSwitch" should be rendered at
-   * "big" height.
+   * The (optional) boolean flag to denote if this "MultipleSwitch" should be
+   * rendered at "big" height.
    * 
    * If both "mediumHeight" and "bigHeight" are set, "bigHeight" will take
    * precedence.
@@ -110,19 +154,19 @@ interface Props<D extends any> {
 
   // Style
   /**
-   * The style to be applied to the main container.
+   * The (optional) style to be applied to the main container.
    */
   containerStyle?: StyleProp<ViewStyle>;
   /**
-   * The style to be applied to the slider.
+   * The (optional) style to be applied to the slider.
    */
   sliderStyle?: StyleProp<ViewStyle>;
   /**
-   * The style to be applied to the text.
+   * The (optional) style to be applied to the text.
    */
   textStyle?: StyleProp<TextStyle>;
   /**
-   * The style to be applied to the text that is currently active.
+   * The (optional) style to be applied to the text that is currently active.
    */
   activeTextStyle?: StyleProp<TextStyle>;
 
@@ -132,9 +176,20 @@ interface Props<D extends any> {
    * "Colors".
    */
   colorOverrides?: Colors;
+
+  // Animation Config
+  /**
+   * The (optional) "SliderAnimationConfig".
+   * 
+   * Only the values specified will be used to override the default values.
+   */
+  sliderAnimationConfig?: SliderAnimationConfig;
 };
 
 
+///////////////
+// CONSTANTS //
+///////////////
 /**
  * The default "Colors" to be used if no overrides are specified.
  */
@@ -146,142 +201,234 @@ const DEFAULT__COLORS: Colors = {
   textColor: '#333333',
   activeTextColor: '#333333',
 };
+const DEFAULT__SLIDER_ANIMATION_CONFIG: SliderAnimationConfig = {
+  slidingDurationMs: 200,
+  opacityDurationMs: 100,
+  opacityStartingValue: 0.45,
+};
 
 
-export const MultipleSwitch = <D extends any> (props: Props<D>) => {
-  const { width } = useWindowDimensions();
-
-
+/////////
+// GUI //
+/////////
+export const MultipleSwitch = <D extends any> (
+  props: MultipleSwitchProps<D>
+) => {
+  ////////////
+  // STATES //
+  ////////////
   const [items, setItems] = useState<MultipleSwitchItem<D>[]>(props.items);
-  const [elements, setElements] = useState<{ id: string; value: number }[]>([]);
   const [active, setActive] = useState<string>(props.value);
+  const [containerWidth, setContainerWidth] = useState<number>(0);
 
 
-  const animatedValue = useRef(new Animated.Value(0)).current;
-  const opacityValue = useRef(new Animated.Value(0)).current;
+  //////////
+  // REFS //
+  //////////
+  const activeItemRef = useRef<MultipleSwitchItem<D>>();
+  const itemsRef = useRef<MultipleSwitchItem<D>[]>([]);
+  const containerWidthRef = useRef<number>(0);
+  const sliderAnimatedIndexRef = useRef<number>(0);
+  const selectedItemIndexRef = useRef<number>(-1);
+  const sliderAnimatedValue = useRef(new Animated.Value(0)).current;
+  const sliderOpacityValue = useRef(new Animated.Value(0)).current;
 
 
+  /////////////////////
+  // ANIMATED VALUES //
+  /////////////////////
+  const sliderTranslateX = sliderAnimatedValue.interpolate({
+      inputRange: [0, containerWidthRef.current],
+      outputRange: [0, containerWidthRef.current],
+  });
+  const sliderOpacity = sliderOpacityValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  });
+
+
+  ///////////
+  // MEMOS //
+  ///////////
   const colors = useMemo<Colors>(() => ({
     ...DEFAULT__COLORS,
     ...props.colorOverrides,
   }), [props.colorOverrides]);
+  const sliderAnimationConfig = useMemo<SliderAnimationConfig>(() => ({
+    ...DEFAULT__SLIDER_ANIMATION_CONFIG,
+    ...props.sliderAnimationConfig,
+  }), [props.sliderAnimationConfig]);
 
 
+  ///////////////
+  // FUNCTIONS //
+  ///////////////
   /**
-   * This effect will run when "width" or "props.items" change.
+   * This function will simply add a delay of the specified number
+   * of milliseconds.
    * 
-   * This will re-populate the items.
+   * As this function is asynchronous, it must be called using the
+   * "await" keyword and from within an "async" function.
+   * 
+   * @param ms
+   * The number of milliseconds to delay by.
    */
-  useEffect(() => {
-    setItems(props.items)
-    setElements([])
-  }, [width, props.items]);
-
+  const delay = async (ms : number) => {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  };
+  
   /**
-   * This effect will run when "props.value" changes.
+   * This function will run the animations for the slider position and opacity.
    * 
-   * This will ensure that the active item is selected if it changes due to
-   * external factors.
+   * @param destinationItem
+   * The "MultipleSwitchItem" that should be selected.
+   * @param destinationItemIndex
+   * The zero-based index of the "MultipleSwitchItem" that should be selected.
    */
-  useEffect(() => {
-    setActive(props.value)
-  }, [props.value]);
-
-  /**
-   * This effect will run when "elements", "items.length", "active" or "width"
-   * change.
-   * 
-   * This will use an animation to move the slider to the active position.
-   */
-  useEffect(() => {
-    if (elements.length !== items.length)
+  const runAnimation = useCallback((
+    destinationItem: MultipleSwitchItem<D>,
+    destinationItemIndex: number
+  ) => {
+    // If there are no items to display, then return.
+    if (itemsRef.current.length <= 0)
     {
       return;
     }
 
-    // Find the active element.
-    const activeElement = elements.find((el) => (el.id === active));
+    const itemCount = itemsRef.current.length;
 
-    if (!activeElement)
+    const initialPlacement = (selectedItemIndexRef.current < 0);
+
+    if (initialPlacement)
     {
-      return;
+      selectedItemIndexRef.current = destinationItemIndex;
     }
 
-    Animated.timing(
-      animatedValue,
-      {
-        toValue: activeElement
-          ? activeElement.value
-          : -width, // set position out of bounds if !position
-        duration: 0,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }
-    ).start(() => {
-      // keep transparent if out of bounds
-      if (!activeElement)
+    const startingItemIndex = selectedItemIndexRef.current;
+    const startingPositionPercent = startingItemIndex / itemCount;
+    const destinationPositionPercent = destinationItemIndex / itemCount;
+    const startingPositionX = startingPositionPercent * containerWidthRef.current;
+    const destinationPositionX = destinationPositionPercent * containerWidthRef.current;
+
+    // If the slider is already in its destination position, if this is the
+    // initial placement of the slider then set the slider position at the
+    // starting position and allow the animation to run.
+    if (startingItemIndex === destinationItemIndex)
+    {
+      if (!initialPlacement)
       {
         return;
       }
 
-      Animated.timing(
-        opacityValue,
-        {
-          toValue: 1,
-          duration: 100,
-          easing: Easing.linear,
-          useNativeDriver: true,
-        }
-      ).start();
-    });
-  }, [elements, items.length, active, width]);
+      sliderAnimatedValue.setValue(startingPositionX);
+    }
 
+    try
+    {
+      // Calculate the animation duration.
+      const animationDuration = sliderAnimationConfig.slidingDurationMs! * (Math.abs(destinationItemIndex - startingItemIndex) / (Math.max(1, itemCount) - 1));
+
+      // Increment the change index.
+      sliderAnimatedIndexRef.current += 1;
+      /**
+       * Copy the new change index to a constant.
+       * 
+       * This is used to ensure that if another animation begins before the
+       * previous animation completes, the completion of the previous animation
+       * doesn't affect the outcome.
+       */
+      const currentSliderAnimatedIndex = sliderAnimatedIndexRef.current;
+
+      // Ensure that the slider starts off with the expected starting opacity
+      // value.
+      // This will make the slider somewhat transparent while it's
+      // sliding/moving.
+      sliderOpacityValue.setValue(sliderAnimationConfig.opacityStartingValue!);
+
+      // Perform the animations.
+      // First perform the sliding/moving animation, followed by the opacity
+      // reveal animation.
+      // Once the animations are complete, "props.onChange" will be called.
+      Animated.sequence([
+        Animated.timing(
+          sliderAnimatedValue,
+          {
+            toValue: destinationPositionX,
+            duration: animationDuration,
+            easing: Easing.ease,
+            useNativeDriver: true,
+          }
+        ),
+        Animated.timing(
+          sliderOpacityValue,
+          {
+            toValue: 1,
+            duration: sliderAnimationConfig.opacityDurationMs,
+            easing: Easing.ease,
+            useNativeDriver: true,
+          }
+        ),
+      ]).start(() => {
+        if (currentSliderAnimatedIndex !== sliderAnimatedIndexRef.current)
+        {
+          return;
+        }
+
+        selectedItemIndexRef.current = destinationItemIndex;
+
+        props.onChange(destinationItem);
+      });
+    }
+    catch (error)
+    {
+      console.error('(MultipleSwitch) runAnimation - Animation failed.', error);
+
+      selectedItemIndexRef.current = destinationItemIndex;
+      sliderAnimatedValue.setValue(destinationPositionX);
+      sliderOpacityValue.setValue(1);
+
+      props.onChange(destinationItem);
+    }
+  }, [
+    sliderAnimatedValue,
+    sliderAnimationConfig.slidingDurationMs,
+    sliderAnimationConfig.opacityDurationMs,
+    sliderAnimationConfig.opacityStartingValue
+  ]);
 
   /**
-   * This function will be called when the user presses one of the items.
+   * This function will delay the calling of the "runAnimation" function.
    * 
-   * This will begin the animation process.
+   * This will only call the "runAnimation" function after determining which
+   * item is selected by using the "activeItemRef" and "itemsRef" refs.
+   * 
+   * The delay is required as this function will be called from several
+   * different "useEffect" instances, the execution order of which cannot be
+   * guaranteed. So adding this delay just ensures that we wait until all
+   * "useEffect" instances are complete.
    */
-  const onStartAnimation = useCallback((newVal: MultipleSwitchItem<D>) => {
-    const position = elements.find((el) => el.id === newVal.uniqueId);
+  const delayedRunAnimation = useCallback(async (
+  ) => {
+    // Wait for a small delay.
+    await delay(10);
 
-    if (!position)
+    if (!activeItemRef.current)
     {
       return;
     }
 
-    Animated.timing(
-      animatedValue,
-      {
-        toValue: position.value,
-        duration: 200,
-        easing: Easing.ease,
-        useNativeDriver: true,
-      }
-    ).start(() => {
-      setActive(newVal.uniqueId);
+    const itemIndex = itemsRef.current.findIndex((item) => (item.uniqueId === activeItemRef.current?.uniqueId));
 
-      const oldPosition = elements.find((el) => (el.id === active));
+    if (itemIndex < 0)
+    {
+      return;
+    }
 
-      // keep transparent if out of bounds
-      if(oldPosition)
-      {
-        return;
-      }
-
-      Animated.timing(
-        opacityValue,
-        {
-          toValue: 1,
-          duration: 100,
-          easing: Easing.linear,
-          useNativeDriver: true,
-        }
-      ).start();
-    });
-
-    props.onChange(newVal);
-  }, [elements, animatedValue, active, opacityValue, props.onChange]);
+    runAnimation(
+      activeItemRef.current,
+      itemIndex
+    );
+  }, [runAnimation]);
 
   /**
    * This function will build the styles to be applied to the main container.
@@ -319,10 +466,10 @@ export const MultipleSwitch = <D extends any> (props: Props<D>) => {
         },
     styles.slider,
     { width: `${100 / items.length}%` },
-    { transform: [{ translateX: animatedValue }] },
-    { opacity: opacityValue },
+    { transform: [{ translateX: sliderTranslateX }] },
+    { opacity: sliderOpacity },
     props.sliderStyle && props.sliderStyle,
-  ]), [props.disabled, colors.sliderColor, colors.sliderDisabledColor, items.length, animatedValue, opacityValue, props.sliderStyle]);
+  ]), [containerWidth, props.disabled, colors.sliderColor, colors.sliderDisabledColor, items.length, props.sliderStyle, sliderTranslateX]);
 
   /**
    * This function will build the styles to be applied to an item.
@@ -348,13 +495,64 @@ export const MultipleSwitch = <D extends any> (props: Props<D>) => {
   ]), [colors.activeTextColor, colors.textColor, props.textStyle, props.activeTextStyle]);
 
 
+  /////////////
+  // EFFECTS //
+  /////////////
+  /**
+   * This effect will run when "props.items" or "delayedRunAnimation" change.
+   * 
+   * This will re-populate the items.
+   */
+  useEffect(() => {
+    setItems(props.items);
+    itemsRef.current = props.items;
+
+    delayedRunAnimation();
+  }, [props.items, delayedRunAnimation]);
+
+  /**
+   * This effect will run when "props.value" or "delayedRunAnimation" change.
+   * 
+   * This will ensure that the position of the slider is correct.
+   */
+  useEffect(() => {
+    setActive(props.value);
+    activeItemRef.current = itemsRef.current.find((item) => (item.uniqueId === props.value));
+
+    delayedRunAnimation();
+  }, [props.value, delayedRunAnimation]);
+
+  /**
+   * This effect will run when "containerWidth" or "delayedRunAnimation"
+   * changes.
+   * 
+   * This will ensure that the position of the slider is correct but will also
+   * force the animation to be skipped since this is only being redrawn due to
+   * a device rotation.
+   */
+  useEffect(() => {
+    // Set this value to "-1" to force the animation to be skipped.
+    selectedItemIndexRef.current = -1;
+
+    delayedRunAnimation();
+  }, [containerWidth, delayedRunAnimation]);
+
+
+  /////////
+  // GUI //
+  /////////
   return (
     <View
       style={getContainerStyle()}
+      onLayout={(event) => {
+        setContainerWidth(event.nativeEvent.layout.width);
+        containerWidthRef.current = event.nativeEvent.layout.width;
+      }}
     >
       <Animated.View
         style={[getSliderStyle()]}
       />
+
       {items.map((item, index) => {
         return (
           <TouchableOpacity
@@ -366,14 +564,7 @@ export const MultipleSwitch = <D extends any> (props: Props<D>) => {
                 width: `${100 / items.length}%`
               }
             ]}
-            onPress={() => onStartAnimation(item)}
-            onLayout={(e) => setElements([
-              ...elements,
-              {
-                id: item.uniqueId,
-                value: e.nativeEvent.layout.x
-              },
-            ])}
+            onPress={() => runAnimation(item, index)}
             disabled={props.disabled}
           >
             <Text
@@ -390,4 +581,7 @@ export const MultipleSwitch = <D extends any> (props: Props<D>) => {
 };
 
 
+/////////////
+// EXPORTS //
+/////////////
 export default MultipleSwitch;
