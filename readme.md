@@ -27,11 +27,22 @@ yarn add react-native-multiple-switch
 import MultiSwitch from 'react-native-multiple-switch'
 
 export const App = () => {
-  const items = ['On', 'Off']
+  const items = [
+    {
+      displayName: 'On'
+      uniqueId: 'on',
+      value: true
+    },
+    {
+      displayName: 'Off'
+      uniqueId: 'off',
+      value: false
+    },
+  ]
   const [value, setValue] = useState(items[0])
 
   return (
-    <MultiSwitch
+    <MultiSwitch<boolean>
       items={items}
       value={value}
       onChange={(val) => setValue(val)}
@@ -40,20 +51,54 @@ export const App = () => {
 }
 ```
 
-## Props
+## Types
+Some custom types are defined and exported which are used in the props.
 
-| Prop            | Type                    | Default | Required |
-| --------------- | ----------------------- | ------- | -------- |
-| items           | string[]                |         | true     |
-| value           | string                  |         | true     |
-| onChange        | (value: string) => void |         | true     |
-| disabled        | boolean                 | false   | false    |
-| mediumHeight    | boolean                 | false   | false    |
-| bigHeight       | boolean                 | false   | false    |
-| containerStyle  | ViewStyle               | {}      | false    |
-| sliderStyle     | ViewStyle               | {}      | false    |
-| textStyle       | TextStyle               | {}      | false    |
-| activeTextStyle | TextStyle               | {}      | false    |
+### MultipleSwitchItem<D extends any>
+`D` is a generic type which will allow the items to have a more complex type as their value.
+
+| Name        | Type        | Default | Required |
+| ----------- | ----------- | ------- | -------- |
+| displayName | string      |         | true     |
+| uniqueId    | string      |         | true     |
+| value       | D (generic) |         | true     |
+
+### Colors
+| Name                             | Type   | Default | Required |
+| -------------------------------- | ------ | ------- | -------- |
+| containerBackgroundColor         | string | #BBBBBB | true     |
+| containerBackgroundDisabledColor | string | #636363 | true     |
+| sliderColor                      | string | #EEEEEE | true     |
+| sliderDisabledColor              | string | #787878 | true     |
+| textColor                        | string | #333333 | true     |
+| activeTextColor                  | string | #333333 | true     |
+
+### SliderAnimationConfig
+
+| Name                 | Type   | Default | Required |
+| -------------------- | ------ | ------- | -------- |
+| slidingDurationMs    | number | 200     | false    |
+| opacityDurationMs    | number | 100     | false    |
+| opacityStartingValue | number | 0.45    | false    |
+
+
+## Props<D extends any>
+`D` is a generic type which will allow the items to have a more complex type as their value.
+
+| Prop                  | Type                                   | Default | Required |
+| --------------------- | -------------------------------------- | ------- | -------- |
+| items                 | MultipleSwitchItem<D>[]                |         | true     |
+| value                 | string                                 |         | true     |
+| onChange              | (value: MultipleSwitchItem<D>) => void |         | true     |
+| disabled              | boolean                                | false   | false    |
+| mediumHeight          | boolean                                | false   | false    |
+| bigHeight             | boolean                                | false   | false    |
+| containerStyle        | ViewStyle                              | {}      | false    |
+| sliderStyle           | ViewStyle                              | {}      | false    |
+| textStyle             | TextStyle                              | {}      | false    |
+| activeTextStyle       | TextStyle                              | {}      | false    |
+| colorOverrides        | Colors                                 | {}      | false    |
+| sliderAnimationConfig | SliderAnimationConfig                  | {}      | false    |
 
 ## Examples
 
@@ -99,6 +144,33 @@ export const App = () => {
     color: '#84a59d',
     textTransform: 'uppercase',
     fontSize: 40,
+  }}
+/>
+
+// Custom colors
+<MultipleSwitch
+  items={items}
+  value={value}
+  onChange={(val) => setValue(val)}
+  colorOverrides={{
+    containerBackgroundColor: '#FFFFFF',
+    containerBackgroundDisabledColor: '#575757',
+    sliderColor: '#00FF00',
+    sliderDisabledColor: '#CDF1CD',
+    textColor: '#000000',
+    activeTextColor: '#0000FF',
+  }}
+/>
+
+// Custom animation settings
+<MultipleSwitch
+  items={items}
+  value={value}
+  onChange={(val) => setValue(val)}
+  sliderAnimationConfig={{
+    slidingDurationMs: 1000,
+    opacityDurationMs: 200,
+    opacityStartingValue: 0.65,
   }}
 />
 ```
