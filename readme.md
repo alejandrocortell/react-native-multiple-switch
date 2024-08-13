@@ -52,9 +52,11 @@ export const App = () => {
 ```
 
 ## Types
+
 Some custom types are defined and exported which are used in the props.
 
 ### MultipleSwitchItem<D extends any>
+
 `D` is a generic type which will allow the items to have a more complex type as their value.
 
 | Name        | Type        | Default | Required |
@@ -64,6 +66,7 @@ Some custom types are defined and exported which are used in the props.
 | value       | D (generic) |         | true     |
 
 ### Colors
+
 | Name                             | Type   | Default | Required |
 | -------------------------------- | ------ | ------- | -------- |
 | containerBackgroundColor         | string | #BBBBBB | true     |
@@ -81,8 +84,8 @@ Some custom types are defined and exported which are used in the props.
 | opacityDurationMs    | number | 100     | false    |
 | opacityStartingValue | number | 0.45    | false    |
 
-
 ## Props<D extends any>
+
 `D` is a generic type which will allow the items to have a more complex type as their value.
 
 | Prop                  | Type                                   | Default | Required |
@@ -105,10 +108,15 @@ Some custom types are defined and exported which are used in the props.
 ![alt react-native-multiple-switch](./examples/example2.gif)
 
 ```javascript
+  const items = [
+    { displayName: 'On', option: 'on', value: 'on', uniqueId: 'on' },
+    { displayName: 'Off', option: 'off', value: 'off', uniqueId: 'off' },
+  ]
+
 <MultipleSwitch
   items={items}
   value={value}
-  onChange={(val) => setValue(val)}
+  onChange={(val) => setValue(val.value)}
 />
 
 // Medium height
