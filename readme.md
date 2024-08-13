@@ -191,6 +191,29 @@ If you would like to contribute to react-native-multiple-switch:
 2. Determine whether you're raising a bug, feature request or question.
 3. Raise your issue or PR.
 
+### Compiling TS to JS
+
+#### Prerequisites
+##### Install Typescript
+Install typescript globally by running below command in a terminal:
+```
+npm install -g typescript
+```
+
+##### Install Depenndencies
+To install all dependencies, run the following command in a terminal:
+```
+npm install
+```
+
+#### Compiling
+To compile the TypeScript code to JavaScript, either run the script `compile_ts_to_js` or run the following command in a terminal:
+```
+tsc src/index.tsx --jsx 'react-native'
+```
+
+Then move the compiled JavaScript file to the `/dist` folder.
+
 ## License
 
 The code is available under the [MIT license](LICENSE.txt).

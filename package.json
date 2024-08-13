@@ -1,6 +1,6 @@
 {
   "name": "react-native-multiple-switch",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Multiswitch selector for react native",
   "main": "dist/index.js",
   "repository": {
@@ -23,5 +23,15 @@
   "bugs": {
     "url": "https://github.com/alejandrocortell/react-native-multiple-switch/issues"
   },
-  "homepage": "https://github.com/alejandrocortell/react-native-multiple-switch#readme"
+  "homepage": "https://github.com/alejandrocortell/react-native-multiple-switch#readme",
+  "scripts": {
+    "compile_ts_to_js": "tsc src/index.tsx --jsx react-native"
+  },
+  "dependencies": {
+    "react": "18.2.0",
+    "react-native": "0.74.3"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3"
+  }
 }
