@@ -1,10 +1,4 @@
-import { StyleSheet } from 'react-native'
-
-const backgroundColor = '#BBBBBB'
-const selectedColor = '#EEEEEE'
-const backgroundColorDisabled = '#636363'
-const selectedColorDisabled = '#787878'
-const colorText = '#333333'
+import { StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
   container: {
@@ -15,14 +9,12 @@ export default StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     height: 30,
-    backgroundColor: backgroundColor,
     overflow: 'hidden'
   },
   slider: {
     position: 'absolute',
     height: '100%',
     borderRadius: 7,
-    backgroundColor: selectedColor,
   },
   item: {
     height: '100%',
@@ -31,15 +23,6 @@ export default StyleSheet.create({
   },
   itemText: {
     textAlign: 'center',
-    color: colorText,
-  },
-
-  // Disabled
-  containerDisabled: {
-    backgroundColor: backgroundColorDisabled,
-  },
-  sliderDisabled: {
-    backgroundColor: selectedColorDisabled,
   },
 
   // Height
@@ -49,4 +32,4 @@ export default StyleSheet.create({
   bigHeight: {
     height: 50,
   },
-})
+});
