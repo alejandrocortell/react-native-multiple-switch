@@ -29,14 +29,14 @@ import MultiSwitch from 'react-native-multiple-switch'
 export const App = () => {
   const items = [
     {
-      displayName: 'On'
-      uniqueId: 'on',
-      value: true
+      displayName: 'Option 1'
+      uniqueId: '1',
+      value: {...complexObject},
     },
     {
-      displayName: 'Off'
-      uniqueId: 'off',
-      value: false
+      displayName: 'Option 2'
+      uniqueId: '2',
+      value: {...complexObject},
     },
   ]
   const [value, setValue] = useState(items[0])
