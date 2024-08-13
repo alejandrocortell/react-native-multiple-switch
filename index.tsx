@@ -217,8 +217,6 @@ export const MultipleSwitch = <D extends any> (
   ////////////
   // STATES //
   ////////////
-  const [items, setItems] = useState<MultipleSwitchItem<D>[]>(props.items);
-  const [active, setActive] = useState<string>(props.value);
   const [containerWidth, setContainerWidth] = useState<number>(0);
 
 
@@ -465,11 +463,11 @@ export const MultipleSwitch = <D extends any> (
           backgroundColor: colors.sliderColor,
         },
     styles.slider,
-    { width: `${100 / items.length}%` },
+    { width: `${100 / props.items.length}%` },
     { transform: [{ translateX: sliderTranslateX }] },
     { opacity: sliderOpacity },
     props.sliderStyle && props.sliderStyle,
-  ]), [containerWidth, props.disabled, colors.sliderColor, colors.sliderDisabledColor, items.length, props.sliderStyle, sliderTranslateX]);
+  ]), [containerWidth, props.disabled, colors.sliderColor, colors.sliderDisabledColor, props.items.length, props.sliderStyle, sliderTranslateX]);
 
   /**
    * This function will build the styles to be applied to an item.
@@ -504,7 +502,6 @@ export const MultipleSwitch = <D extends any> (
    * This will re-populate the items.
    */
   useEffect(() => {
-    setItems(props.items);
     itemsRef.current = props.items;
 
     delayedRunAnimation();
@@ -516,7 +513,6 @@ export const MultipleSwitch = <D extends any> (
    * This will ensure that the position of the slider is correct.
    */
   useEffect(() => {
-    setActive(props.value);
     activeItemRef.current = itemsRef.current.find((item) => (item.uniqueId === props.value));
 
     delayedRunAnimation();
@@ -553,7 +549,7 @@ export const MultipleSwitch = <D extends any> (
         style={[getSliderStyle()]}
       />
 
-      {items.map((item, index) => {
+      {props.items.map((item, index) => {
         return (
           <TouchableOpacity
             key={index}
@@ -561,14 +557,14 @@ export const MultipleSwitch = <D extends any> (
             style={[
               styles.item,
               {
-                width: `${100 / items.length}%`
+                width: `${100 / props.items.length}%`
               }
             ]}
             onPress={() => runAnimation(item, index)}
             disabled={props.disabled}
           >
             <Text
-              style={getTextStyle((active === item.uniqueId))}
+              style={getTextStyle((props.value === item.uniqueId))}
               numberOfLines={1}
             >
               {item.displayName}
