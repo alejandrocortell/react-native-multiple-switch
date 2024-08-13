@@ -1,6 +1,6 @@
 {
   "name": "react-native-multiple-switch",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Multiswitch selector for react native",
   "main": "dist/index.js",
   "repository": {
