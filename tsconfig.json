@@ -3,7 +3,7 @@
         "jsx": "react-native",
         "module": "commonjs",
         "noImplicitAny": true,
-        "outDir": "dist/",
+        "outDir": "dist",
         "sourceMap": true,
         "target": "es5"
     },
