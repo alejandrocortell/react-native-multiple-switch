@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/alejandrocortell/react-native-multiple-switch#readme",
   "scripts": {
-    "compile_ts_to_js": "tsc src/index.tsx --jsx react-native"
+    "compile_ts_to_js": " tsc --project .\\tsconfig.json"
   },
   "dependencies": {
     "react": "18.2.0",
